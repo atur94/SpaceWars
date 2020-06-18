@@ -1,11 +1,12 @@
 ﻿using Unity.Entities;
+using Unity.Mathematics;
 using Unity.Transforms;
 
-[GenerateAuthoringComponent]
 public struct TargetSelector : IComponentData
 {
     public Entity Primary;
-    public Translation PrimaryTranslation;
+    public float3 PrimaryTranslation;
     public Entity Secondary;
-    public Translation SecondaryTranslation;
+    public float3 SecondaryTranslation;
+    public Entity parent;
 }

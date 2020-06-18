@@ -1,50 +1,52 @@
 ﻿
 
+using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Physics;
+using Unity.Physics.Systems;
 using Unity.Rendering;
 using Unity.Transforms;
+using UnityEditor;
 using UnityEngine;
+using Ray = UnityEngine.Ray;
+using RaycastHit = Unity.Physics.RaycastHit;
 
-public class EntitySpawnerSystem : ComponentSystem
+public class EntitySpawnerSystem : ComponentSystem, IDeclareReferencedPrefabs
 {
+    BeginInitializationEntityCommandBufferSystem m_EntityCommandBufferSystem;
 
     protected override void OnCreate()
     {
-        base.OnCreate();
+        m_EntityCommandBufferSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
     }
 
     private const int UNITS_SPAWN = 1;
     protected override void OnUpdate()
     {
 
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Alpha2))
         {
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D rayHit = Physics2D.Raycast(ray.origin, ray.direction);
             if (rayHit.collider != null)
             {
-                Entity target = Entity.Null;
-
-                Entities.WithAll<TargetTag>().ForEach((entity) =>
-                {
-                    if(target == Entity.Null)
-                        target = entity;
-                });
+                var conversionSystem = EntityManager.World.GetOrCreateSystem<GameObjectConversionSystem>();
+                var commandBuffer = m_EntityCommandBufferSystem.CreateCommandBuffer();
                 for (int i = 0; i < UNITS_SPAWN; i++)
                 {
-                    var spawnedUnit = EntityManager.Instantiate(PrefabComponentSystem.defaultPrefabEntity);
+                    var entity = conversionSystem.GetPrimaryEntity(PrefabComponentSystem.defaultPrefabStatic);
+                    entity = commandBuffer.Instantiate(entity);
+                    EntityManager.SetComponentData(entity, new Translation { Value = new float3(rayHit.point + Vector2.right * i * 2, 0f) });
 
-                    EntityManager.SetName(spawnedUnit, "Unit");
-                    EntityManager.SetComponentData(spawnedUnit, new Translation { Value = new float3(rayHit.point + Vector2.right * i * 2, 0f) });
-
-                    EntityManager.SetComponentData(spawnedUnit, new TargetSelector
-                    {
-                        Primary = target
-                    });
+                    return;
+                    //                    EntityManager.SetName(spawnedUnit, "UnitGroup");
                 }
 
-                    // Do something with the object that was hit by the raycast.
+
+                // Do something with the object that was hit by the raycast.
             }
 
 
@@ -55,5 +57,11 @@ public class EntitySpawnerSystem : ComponentSystem
         //{
         //    EntityManager.Instantiate(PrefabComponentSystem.defaultPrefabEntity);
         //});
+    }
+
+
+    public void DeclareReferencedPrefabs(List<GameObject> referencedPrefabs)
+    {
+        referencedPrefabs.Add(PrefabComponentSystem.defaultPrefabStatic);
     }
 }

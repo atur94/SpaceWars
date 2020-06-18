@@ -11,7 +11,7 @@ public class VelocitySystem
 //    protected  JobHandle OnUpdate(JobHandle inputDeps)
 //    {
 //        var deltaTime = Time.DeltaTime;
-//        return Entities.ForEach((LastPosition lastPosition, Translation currentPosition, ref Speed speed) =>
+//        return Entities.ForEach((LastPosition lastPosition, Translation currentPosition, ref Velocity speed) =>
 //        {
 //            
 //            speed.currentVelocity = math.length(currentPosition.Value.xy - lastPosition.xy)/deltaTime;
