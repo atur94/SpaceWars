@@ -1,57 +1,109 @@
-﻿using Unity.Burst;
+﻿using System;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Physics;
 using Unity.Physics.Systems;
+using Unity.Rendering;
+using Unity.Transforms;
 using UnityEngine;
 using Collider = Unity.Physics.Collider;
 
-
-public class CollisionSystem 
+[UpdateAfter(typeof(EndFramePhysicsSystem))]
+public class CollisionSystem  : JobComponentSystem
 {
-
-    [BurstCompile]
     public struct TriggerJob : ITriggerEventsJob
     {
-        public ComponentDataFromEntity<Velocity> physicsVelocityEntities;
+        [ReadOnly]public ComponentDataFromEntity<Spawner> spawners;
+        public ComponentDataFromEntity<UnitInRange> units;
+        public EntityCommandBuffer commandBuffer;
+        [ReadOnly]public EntityManager entityManager;
         public void Execute(TriggerEvent triggerEvent)
         {
-            if (physicsVelocityEntities.HasComponent(triggerEvent.Entities.EntityA))
+            Entity entityA = triggerEvent.Entities.EntityA;
+            Entity entityB = triggerEvent.Entities.EntityB;
+            if (units.Exists(entityA) && spawners.Exists(entityB))
             {
-                Velocity velocity = physicsVelocityEntities[triggerEvent.Entities.EntityA];
-                velocity.currentAcceleration = 0f;
-                velocity.currentVelocity = 4f;
-                velocity.currentVector *= -1;
+                TriggerEvent(entityB, entityA);
+            }
+            else if (units.Exists(entityB) && spawners.Exists(entityA))
+            {
+                TriggerEvent(entityA, entityB);
             }
 
-            if (physicsVelocityEntities.HasComponent(triggerEvent.Entities.EntityB))
+        }
+
+        private void TriggerEvent(Entity spawner, Entity unit)
+        {
+            UnitInRange range = units[unit];
+            if(range.planetEntity == spawner)
             {
-                Velocity velocity = physicsVelocityEntities[triggerEvent.Entities.EntityB];
-                velocity.currentAcceleration = 0f;
-                velocity.currentVelocity = 4f;
-                velocity.currentVector *= -1;
+                commandBuffer.AddComponent(unit, new UnitCanBeSwallowed
+                {
+                    spawnerEntity = spawner
+                });
+
             }
         }
+
+
     }
 
+    private StepPhysicsWorld stepPhysicsWorld;
+    private BuildPhysicsWorld buildPhysicsWorld;
+    private EntityCommandBufferSystem entityCommandBufferSystem;
+    private EntityManager entityManager;
+    protected override void OnCreate()
+    {
+        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        buildPhysicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>();
+        stepPhysicsWorld = World.DefaultGameObjectInjectionWorld.GetExistingSystem<StepPhysicsWorld>();
+        entityCommandBufferSystem = World.DefaultGameObjectInjectionWorld
+            .GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
 
-//    private BuildPhysicsWorld buidPhysicsWorld;
-//    private StepPhysicsWorld stepPhysicsWorld;
-//
-//    protected void OnCreate()
-//    {
-//        buidPhysicsWorld = World.GetOrCreateSystem<BuildPhysicsWorld>();
-//        stepPhysicsWorld = World.GetOrCreateSystem<StepPhysicsWorld>();
-//    }
-//
-//    protected override JobHandle OnUpdate(JobHandle inputDeps)
-//    {
-//        TriggerJob triggerJob = new TriggerJob
-//        {
-//            physicsVelocityEntities = GetComponentDataFromEntity<Velocity>()
-//        };
-//
-//        return triggerJob.Schedule(stepPhysicsWorld.Simulation, ref buidPhysicsWorld.PhysicsWorld, inputDeps);
-//    }
+    }
+
+    protected override JobHandle OnUpdate(JobHandle inputDeps)
+    {
+        var job = new TriggerJob();
+        job.spawners = GetComponentDataFromEntity<Spawner>();
+        job.units = GetComponentDataFromEntity<UnitInRange>();
+        job.entityManager = entityManager;
+        job.commandBuffer = entityCommandBufferSystem.CreateCommandBuffer();
+        JobHandle jobHandle = job.Schedule(stepPhysicsWorld.Simulation, ref buildPhysicsWorld.PhysicsWorld, inputDeps);
+        jobHandle.Complete();
+
+        return inputDeps;
+    }
+}
+
+[UpdateBefore(typeof(CollisionSystem))]
+public class UnitRemovalSystem : ComponentSystem
+{
+    protected override void OnUpdate()
+    {
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        Entities.WithAll(typeof(UnitCanBeDestroyed)).ForEach((Entity entity) => { entityManager.DestroyEntity(entity); });
+    }
+}
+
+[UpdateBefore(typeof(CollisionSystem))]
+public class UnitSwallowingSystem : ComponentSystem
+{
+    protected override void OnUpdate()
+    {
+        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        Entities.ForEach((Entity entity, ref UnitCanBeSwallowed swallowedProperty) =>
+        {
+            var planetEntity = swallowedProperty.spawnerEntity;
+            var unitsBuffer = entityManager.GetBuffer<PlanetUnitsBuffer>(planetEntity);
+            unitsBuffer.Add(new PlanetUnitsBuffer
+            {
+                shipKind = entity
+            });
+            entityManager.DestroyEntity(entity);
+
+        });
+    }
 }

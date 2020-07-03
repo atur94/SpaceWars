@@ -26,3 +26,8 @@ public struct Attack : IComponentData
     public float EnergyPerShot;
     public float Cooldown;
 }
+
+public struct MovementSpeed : IComponentData
+{
+    public float Value;
+}

@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f9f2267395044edac3c366d3b115030, type: 3}
   m_Name: 2
   m_EditorClassIdentifier: 
-  cost: 125
+  key: 2
+  cost: 427
   isLocked: 1
   isSelected: 0
   unitName: Lider
-  prefab: {fileID: 311220757499564718, guid: a16856ff8c4ac5747b56f67f2f955355, type: 3}
+  prefab: {fileID: 1131712645899903948, guid: 7810ff5c44117d14b856ae4648cd96fc, type: 3}
   sprite: {fileID: 21300000, guid: a04c2141586af3843910a0fb318969bb, type: 3}
   health:
     baseValue: 300

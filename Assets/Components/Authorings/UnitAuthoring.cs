@@ -6,16 +6,26 @@ using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Unity.Entities;
 
+public struct UnitCanBeDestroyed : ISharedComponentData { }
+
+
+public struct UnitCanBeSwallowed : IComponentData
+{
+    public Entity spawnerEntity;
+}
+
+
+
 public class UnitAuthoring : MonoBehaviour, IConvertGameObjectToEntity
 {
 
     public Unit unitScriptableObject;
+
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
-        dstManager.AddComponentData(entity, new UnitGroup
-        {
-        });
+        dstManager.AddComponentData(entity, new UnitOwner { });
     }
+
 }
 
 [Serializable]

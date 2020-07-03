@@ -32,7 +32,7 @@ public class TargetSelectionSystem : ComponentSystem
 //
 //            float rayDistance = 100f;
 //            var entitySelected = Raycast(ray.origin, (ray.direction * rayDistance) + ray.origin);
-//            Entities.ForEach((Entity entity, ref SelectedTag tag) => { EntityManager.RemoveComponent<SelectedTag>(entity); });
+//            Entities.ForEach((Entity planetEntity, ref SelectedTag tag) => { EntityManager.RemoveComponent<SelectedTag>(planetEntity); });
 //
 //            if (entitySelected != Entity.Null)
 //            {
@@ -60,10 +60,10 @@ public class TargetSelectionSystem : ComponentSystem
 //
 //            // Sprawdzić czy jest coś zaznaczone. Jezeli tak to wyslac jednostki na ta zaznaczoną jednostkę
 //            Entity parentEntity = Entity.Null;
-//            Entities.WithAll<SelectedTag>().ForEach(entity =>
+//            Entities.WithAll<SelectedTag>().ForEach(planetEntity =>
 //            {
 //                isAnySelected = true;
-//                parentEntity = entity;
+//                parentEntity = planetEntity;
 //            });
 //
 //            if (isAnySelected && entitySelected != Entity.Null)

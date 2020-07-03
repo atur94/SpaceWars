@@ -12,15 +12,37 @@ public class SpaceWarsEntities : MonoBehaviour, IConvertGameObjectToEntity, IDec
     public static Entity defaultUnitEntity;
     public static Entity shipFirstEntity;
 
+    public static List<Entity> shipEntities;
+
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
+        shipEntities = new List<Entity>();
         defaultUnitEntity = conversionSystem.GetPrimaryEntity(defaultUnit);
         shipFirstEntity = conversionSystem.GetPrimaryEntity(shipFirst);
+
+        var availableUnits = Resources.LoadAll<Unit>("Prefabs/Ships");
+
+        foreach (var availableUnit in availableUnits)
+        {
+            var entityTemp = conversionSystem.GetPrimaryEntity(availableUnit.prefab);
+            World.DefaultGameObjectInjectionWorld.EntityManager.AddComponentData(entityTemp, new UnitGroup
+            {
+                Value = availableUnit.key,
+            });
+            shipEntities.Add(entityTemp);
+        }
+
     }
 
     public void DeclareReferencedPrefabs(List<GameObject> referencedPrefabs)
     {
         referencedPrefabs.Add(defaultUnit);
         referencedPrefabs.Add(shipFirst);
+        var availableUnits = Resources.LoadAll<Unit>("Prefabs/Ships");
+
+        foreach (var availableUnit in availableUnits)
+        {
+            referencedPrefabs.Add(availableUnit.prefab);
+        }
     }
 }

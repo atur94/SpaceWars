@@ -1,8 +1,6 @@
-﻿using Unity.Collections;
-using Unity.Entities;
+﻿using Unity.Entities;
 
 public struct UnitGroup : IComponentData
 {
-    public ushort unitGroup;
+    public int Value;
 }
-

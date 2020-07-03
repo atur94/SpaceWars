@@ -1,28 +1,54 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using JetBrains.Annotations;
 using Unity.Entities;
 using Unity.Transforms;
 
-public class PlanetManager : MonoBehaviour
+public class PlanetManager : MonoBehaviour, INotifyPropertyChanged
 {
-    public List<SpawnerAuthoring> spawners;
+    public List<SinglePlanetController> planets;
+    public PlayerManager playerManager;
+    public SinglePlanetController CurrentlySelectedPlanet
+    {
+        get => _currentlySelectedPlanet;
+        set
+        {
+            if (value != null && _currentlySelectedPlanet != value && value.owner == playerManager.me)
+            {
+                _currentlySelectedPlanet = value;
+                OnPropertyChanged();
+                return;
+            }
 
-    public SpawnerAuthoring currentlySelectedSpawner;
+            if(value == null)
+                _currentlySelectedPlanet = value;
+        }
+    }
 
     public EntityManager entityManager;
-    private EntityCommandBuffer commandBuffer;
+    private EntityCommandBuffer CommandBuffer
+    {
+        get => commandBufferSystem.CreateCommandBuffer();
+    }
     private EntityCommandBufferSystem commandBufferSystem;
+    private SinglePlanetController _currentlySelectedPlanet;
 
     // Use this for initialization
     void Awake()
     {
-        spawners = new List<SpawnerAuthoring>();
+        playerManager = FindObjectOfType<PlayerManager>();
+        planets = new List<SinglePlanetController>();
         entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         commandBufferSystem = World.DefaultGameObjectInjectionWorld
             .GetOrCreateSystem<EntityCommandBufferSystem>();
-        commandBuffer = World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<EntityCommandBufferSystem>()
-            .CreateCommandBuffer();
+    }
+
+    void Start()
+    {
     }
 
     void Update()
@@ -36,18 +62,18 @@ public class PlanetManager : MonoBehaviour
             {
                 if (collider.gameObject.tag.Equals("Background"))
                 {
-                    currentlySelectedSpawner = null;
-                    foreach (var spawnerAuthoring in spawners)
+                    CurrentlySelectedPlanet = null;
+                    foreach (var spawnerAuthoring in planets)
                     {
                         if (entityManager.HasComponent<SelectedTag>(spawnerAuthoring.spawnerEntity))
                         {
                             entityManager.RemoveComponent<SelectedTag>(spawnerAuthoring.spawnerEntity);
                         }
                     }
-                }else if (collider.gameObject.GetComponent<SpawnerAuthoring>() is SpawnerAuthoring spawnerTemp)
+                }else if (collider.gameObject.GetComponent<SinglePlanetController>() is SinglePlanetController spawnerTemp && spawnerTemp.owner == playerManager.me)
                 {
-                    currentlySelectedSpawner = spawnerTemp;
-                    foreach (var spawnerAuthoring in spawners)
+                    CurrentlySelectedPlanet = spawnerTemp;
+                    foreach (var spawnerAuthoring in planets)
                     {
                         if (entityManager.HasComponent<SelectedTag>(spawnerAuthoring.spawnerEntity))
                         {
@@ -62,29 +88,41 @@ public class PlanetManager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
-            if (currentlySelectedSpawner != null)
+            if (CurrentlySelectedPlanet != null)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
                 var collider = hit.collider;
-                if (collider.GetComponent<SpawnerAuthoring>() is SpawnerAuthoring attackedSpawner && attackedSpawner != currentlySelectedSpawner)
+                if (collider.GetComponent<SinglePlanetController>() is SinglePlanetController attackedSpawner && attackedSpawner != CurrentlySelectedPlanet && attackedSpawner.owner != playerManager.me)
                 {
                     Debug.Log("Zaaakuj en spawner");
-
-                    var commandBuff = commandBufferSystem.CreateCommandBuffer();
-                    var spawnedEntity = commandBuff.Instantiate(SpaceWarsEntities.shipFirstEntity);
-                    commandBuff.SetComponent(spawnedEntity, new Translation
+                    for (int i = 0; i < 50; i++)
                     {
-                        Value = currentlySelectedSpawner.transform.position,
-                    });
+                        var commandBuff = CommandBuffer;
+                        var spawnedEntity = commandBuff.Instantiate(SpaceWarsEntities.shipEntities[0]);
+                        commandBuff.SetComponent(spawnedEntity, new Translation
+                        {
+                            Value = CurrentlySelectedPlanet.transform.position,
+                        });
 
-                    commandBuff.SetComponent(spawnedEntity, new TargetSelector
-                    {
-                        PrimaryTranslation = attackedSpawner.transform.position,
-                        SecondaryTranslation = attackedSpawner.transform.position,
-                    });
+                        commandBuff.SetComponent(spawnedEntity, new TargetSelector
+                        {
+                            PrimaryTranslation = attackedSpawner.transform.position,
+                            Primary = attackedSpawner.spawnerEntity,
+                            SecondaryTranslation = attackedSpawner.transform.position,
+                        });
+                    }
+
                 }
             }
         }
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    [NotifyPropertyChangedInvocator]
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

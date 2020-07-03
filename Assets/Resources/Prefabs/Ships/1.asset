@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f9f2267395044edac3c366d3b115030, type: 3}
   m_Name: 1
   m_EditorClassIdentifier: 
-  cost: 150
+  key: 1
+  cost: 350
   isLocked: 1
   isSelected: 0
   unitName: Sprider

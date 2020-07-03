@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerManager : MonoBehaviour
 {
     public Player me;
-
+    private static int playerId = 1;
     public void Awake()
     {
         // Czytaj z pamięci dane gracza
@@ -14,8 +14,11 @@ public class PlayerManager : MonoBehaviour
 
         me = ScriptableObject.CreateInstance<Player>();
         me.isCurrentPlayer = true;
-        me.id = GUID.Generate();
+        me.id = playerId;
         me.unlockedUnits = new List<Unit>();
         me.availableMoney = 1000;
+        playerId++;
     }
+
+
 }

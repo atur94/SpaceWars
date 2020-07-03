@@ -9,13 +9,15 @@ using Object = UnityEngine.Object;
 [CreateAssetMenu(fileName = "AI Config", menuName = "AI Assets")]
 public class Player : ScriptableObject
 {
+    public static int idIncrement = 1;
+
     public int availableMoney;
-    [SerializeField] public GUID id;
+    [SerializeField] public int id;
 
     [ReadOnly(true)] public bool isAi;
     [ReadOnly(true)] public bool isCurrentPlayer;
     [SerializeField]
-    private string name;
+    private string playerName;
 
     public List<Unit> unlockedUnits;
     public List<Unit> pickedUnits;
@@ -23,5 +25,6 @@ public class Player : ScriptableObject
     private void Awake()
     {
         unlockedUnits = new List<Unit>();
+        id = idIncrement++;
     }
 }

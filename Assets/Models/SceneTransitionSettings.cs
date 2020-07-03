@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class SceneTransitionSettings : MonoBehaviour
+public class SceneTransitionSettings 
 {
     private SceneTransitionSettings()
     {
@@ -36,7 +36,7 @@ public class SceneTransitionSettings : MonoBehaviour
                 var unlockedUnits = new List<Unit>();
                 foreach (var availableUnit in availableUnits)
                 {
-                    unlockedUnits.Add(Instantiate(availableUnit));
+                    unlockedUnits.Add(MonoBehaviour.Instantiate(availableUnit));
                 }
                 _player.pickedUnits.AddRange(availableUnits);
 

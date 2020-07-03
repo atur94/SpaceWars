@@ -207,39 +207,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f6cc689cfa046e7b2a0ada910f26e70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitName: Light
-  health:
-    baseValue: 150
-    addedPoints: 0
-    capValue: 300
-    isAddedStatPercentage: 0
-  attackDamage:
-    baseValue: 15
-    addedPoints: 0
-    capValue: 40
-    isAddedStatPercentage: 0
-  attackCooldown:
-    baseValue: 0.5
-    addedPoints: 0
-    capValue: 0
-    isAddedStatPercentage: 0
-  movementSpeed:
-    baseValue: 4
-    addedPoints: 0
-    capValue: 6
-    isAddedStatPercentage: 0
-  energy:
-    baseValue: 100
-    addedPoints: 0
-    capValue: 200
-    isAddedStatPercentage: 0
-  energyRegeneration:
-    baseValue: 10
-    addedPoints: 0
-    capValue: 25
-    isAddedStatPercentage: 0
-  energyPerAttack:
-    baseValue: 10
-    addedPoints: 0
-    capValue: 5
-    isAddedStatPercentage: 0
+  unitScriptableObject: {fileID: 11400000, guid: 68bf4f9ebfd675a45b2c0c69ae09a5d3,
+    type: 2}

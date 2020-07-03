@@ -1,13 +1,9 @@
-﻿using Unity.Collections;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Systems;
-using Unity.Rendering;
 using Unity.Transforms;
-using UnityEngine;
-using UnityEngine.SocialPlatforms;
 using RaycastHit = Unity.Physics.RaycastHit;
 
 public class MoveSystem : JobComponentSystem
@@ -189,13 +185,13 @@ public class MoveSystem : JobComponentSystem
     }
 }
 
-public class PhysicalVelocityRemovalSystem : ComponentSystem
-{
-    protected override void OnUpdate()
-    {
-        Entities.ForEach((Entity Entity, ref PhysicsVelocity PhysicsVelocity) =>
-            {
-                EntityManager.RemoveComponent<PhysicsVelocity>(Entity);
-            });
-    }
-}
+//public class PhysicalVelocityRemovalSystem
+//{
+//    protected override void OnUpdate()
+//    {
+//        Entities.ForEach((Entity Entity, ref PhysicsVelocity PhysicsVelocity) =>
+//            {
+//                EntityManager.RemoveComponent<PhysicsVelocity>(Entity);
+//            });
+//    }
+//}
