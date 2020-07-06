@@ -91,6 +91,10 @@ public class UnitRemovalSystem : ComponentSystem
 [UpdateBefore(typeof(CollisionSystem))]
 public class UnitSwallowingSystem : ComponentSystem
 {
+    public delegate void UnitEntered(Entity unit, Entity spawner);
+
+    public event UnitEntered onUnitEntered;
+
     protected override void OnUpdate()
     {
         var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
@@ -102,8 +106,12 @@ public class UnitSwallowingSystem : ComponentSystem
             {
                 shipKind = entity
             });
+
+            onUnitEntered?.Invoke(entity, swallowedProperty.spawnerEntity);
+
             entityManager.DestroyEntity(entity);
 
         });
     }
+
 }

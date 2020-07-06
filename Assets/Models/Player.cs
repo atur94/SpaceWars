@@ -20,7 +20,19 @@ public class Player : ScriptableObject
     private string playerName;
 
     public List<Unit> unlockedUnits;
-    public List<Unit> pickedUnits;
+    private List<Unit> _pickedUnits;
+
+    public List<Unit> pickedUnits
+    {
+        get
+        {
+            if (isAi)
+                return SpaceWarsEntities.availableUnits;
+            return _pickedUnits;
+
+        }
+        set => _pickedUnits = value;
+    }
 
     private void Awake()
     {

@@ -11,16 +11,17 @@ public class SpaceWarsEntities : MonoBehaviour, IConvertGameObjectToEntity, IDec
     public GameObject shipFirst;
     public static Entity defaultUnitEntity;
     public static Entity shipFirstEntity;
-
+    public static List<Unit> availableUnits;
     public static List<Entity> shipEntities;
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
+        availableUnits = new List<Unit>();
         shipEntities = new List<Entity>();
         defaultUnitEntity = conversionSystem.GetPrimaryEntity(defaultUnit);
         shipFirstEntity = conversionSystem.GetPrimaryEntity(shipFirst);
 
-        var availableUnits = Resources.LoadAll<Unit>("Prefabs/Ships");
+        availableUnits.AddRange(Resources.LoadAll<Unit>("Prefabs/Ships"));
 
         foreach (var availableUnit in availableUnits)
         {

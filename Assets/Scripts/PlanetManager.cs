@@ -10,6 +10,7 @@ using Unity.Transforms;
 
 public class PlanetManager : MonoBehaviour, INotifyPropertyChanged
 {
+    public UnitSwallowingSystem unitSwallowingSystem;
     public List<SinglePlanetController> planets;
     public PlayerManager playerManager;
     public SinglePlanetController CurrentlySelectedPlanet
@@ -49,7 +50,37 @@ public class PlanetManager : MonoBehaviour, INotifyPropertyChanged
 
     void Start()
     {
+        unitSwallowingSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystem<UnitSwallowingSystem>();
+        unitSwallowingSystem.onUnitEntered += UnitEntered;
     }
+
+    private void UnitEntered(Entity unit, Entity spawner)
+    {
+        foreach (var singlePlanetController in planets)
+        {
+            if (spawner == singlePlanetController.spawnerEntity)
+            {
+                var unitGroup = entityManager.GetComponentData<UnitGroup>(unit);
+                foreach (var unitPrefab in SpaceWarsEntities.availableUnits)
+                {
+                    if (singlePlanetController.owner == null && singlePlanetController.actualUnits.Count == 0)
+                    {
+                        var unitOwner = entityManager.GetComponentData<UnitOwner>(unit);
+                        var owner = GameManager.players.Find(player => player.id == unitOwner.owner);
+                        if(owner != null)
+                            singlePlanetController.owner = owner;
+                    }
+                    if (unitPrefab.key == unitGroup.Value)
+                    {
+                        singlePlanetController.actualUnits.Add(Instantiate(unitPrefab));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    
 
     void Update()
     {
@@ -93,16 +124,30 @@ public class PlanetManager : MonoBehaviour, INotifyPropertyChanged
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
                 var collider = hit.collider;
-                if (collider.GetComponent<SinglePlanetController>() is SinglePlanetController attackedSpawner && attackedSpawner != CurrentlySelectedPlanet && attackedSpawner.owner != playerManager.me)
+                if (collider.GetComponent<SinglePlanetController>() is SinglePlanetController attackedSpawner && attackedSpawner != CurrentlySelectedPlanet)
                 {
                     Debug.Log("Zaaakuj en spawner");
+
+                    var commandBuff = CommandBuffer;
+
+//                    var spawnCommand = commandBuff.CreateEntity();
+//                    commandBuff.AddComponent(spawnCommand, new SpawnUnitCommand
+//                    {
+//                        source = CurrentlySelectedPlanet.spawnerEntity,
+//                        target = attackedSpawner.spawnerEntity,
+//                        percent = 0.5f
+//                    });
                     for (int i = 0; i < 50; i++)
                     {
-                        var commandBuff = CommandBuffer;
                         var spawnedEntity = commandBuff.Instantiate(SpaceWarsEntities.shipEntities[0]);
                         commandBuff.SetComponent(spawnedEntity, new Translation
                         {
                             Value = CurrentlySelectedPlanet.transform.position,
+                        });
+                    
+                        commandBuff.SetComponent(spawnedEntity, new UnitOwner
+                        {
+                            owner = CurrentlySelectedPlanet.owner.id
                         });
 
                         commandBuff.SetComponent(spawnedEntity, new TargetSelector
