@@ -128,35 +128,7 @@ public class PlanetManager : MonoBehaviour, INotifyPropertyChanged
                 {
                     Debug.Log("Zaaakuj en spawner");
 
-                    var commandBuff = CommandBuffer;
-
-//                    var spawnCommand = commandBuff.CreateEntity();
-//                    commandBuff.AddComponent(spawnCommand, new SpawnUnitCommand
-//                    {
-//                        source = CurrentlySelectedPlanet.spawnerEntity,
-//                        target = attackedSpawner.spawnerEntity,
-//                        percent = 0.5f
-//                    });
-                    for (int i = 0; i < 50; i++)
-                    {
-                        var spawnedEntity = commandBuff.Instantiate(SpaceWarsEntities.shipEntities[0]);
-                        commandBuff.SetComponent(spawnedEntity, new Translation
-                        {
-                            Value = CurrentlySelectedPlanet.transform.position,
-                        });
-                    
-                        commandBuff.SetComponent(spawnedEntity, new UnitOwner
-                        {
-                            owner = CurrentlySelectedPlanet.owner.id
-                        });
-
-                        commandBuff.SetComponent(spawnedEntity, new TargetSelector
-                        {
-                            PrimaryTranslation = attackedSpawner.transform.position,
-                            Primary = attackedSpawner.spawnerEntity,
-                            SecondaryTranslation = attackedSpawner.transform.position,
-                        });
-                    }
+                    CurrentlySelectedPlanet.SpawnUnits(attackedSpawner);
 
                 }
             }
