@@ -7,8 +7,11 @@ public class SpawnerDefendingSystem : ComponentSystem
 
     protected override void OnCreate()
     {
-        base.OnCreate();
-        
+        unitsInRangeQuery = GetEntityQuery(new EntityQueryDesc
+        {
+            All = new[] { ComponentType.ReadOnly<UnitInRange>() }
+        });
+
     }
 
     protected override void OnUpdate()

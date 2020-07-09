@@ -74,7 +74,7 @@ public class CollisionSystem  : JobComponentSystem
         JobHandle jobHandle = job.Schedule(stepPhysicsWorld.Simulation, ref buildPhysicsWorld.PhysicsWorld, inputDeps);
         jobHandle.Complete();
 
-        return inputDeps;
+        return jobHandle;
     }
 }
 
@@ -109,6 +109,7 @@ public class UnitSwallowingSystem : ComponentSystem
 
             onUnitEntered?.Invoke(entity, swallowedProperty.spawnerEntity);
 
+                
             entityManager.DestroyEntity(entity);
 
         });

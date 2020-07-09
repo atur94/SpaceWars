@@ -49,6 +49,7 @@ public class PlanetAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDecla
         {
             Value = enemyDetectionRange
         });
+        dstManager.AddComponentData(entity, new EnemiesInRange());
 
 
         this.spawnerEntity = entity;

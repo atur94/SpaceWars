@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe84748a8d4d4ae5ab34e9257b5f23a6, type: 3}
   m_Name: AI Config
   m_EditorClassIdentifier: 
+  availableMoney: 0
+  id: 1
   isAi: 1
   isCurrentPlayer: 0
-  name: dumbAI
+  playerName: 
+  unlockedUnits: []
