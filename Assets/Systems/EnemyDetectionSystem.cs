@@ -29,7 +29,6 @@ public class EnemyDetectionSystem : ComponentSystem
         [Unity.Collections.ReadOnly] public float detectionRange;
         [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<Translation> unitsTranslationsType;
         [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<TargetSelector> unitsTargetsType;
-        [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<UnitOwner> unitOwnersType;
         [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<UnitInRange> unitsInRangeType;
         [Unity.Collections.ReadOnly] public ArchetypeChunkEntityType entitiesTypes;
         public EntityCommandBuffer.Concurrent entityCommandBuffer;
@@ -38,13 +37,9 @@ public class EnemyDetectionSystem : ComponentSystem
             var unitTranslations = chunk.GetNativeArray(unitsTranslationsType);
             var unitTargets = chunk.GetNativeArray(unitsTargetsType); 
             var entitiesChunk = chunk.GetNativeArray(entitiesTypes);
-            var unitOwners = chunk.GetNativeArray(unitOwnersType);
-            var unitsLeft = chunk.GetNativeArray(unitsInRangeType);
 
             for (int i = 0; i < planetsTranslations.Length; i++)
             {
-                bool enemiesWasInRange = false;
-
                 for (int j = 0; j < unitTargets.Length; j++)
                 {
                     if (planetEntities[i] == unitTargets[j].Primary)
@@ -59,19 +54,7 @@ public class EnemyDetectionSystem : ComponentSystem
                             entityCommandBuffer.RemoveComponent(chunkIndex, entitiesChunk[j], ComponentType.ReadOnly<UnitInRange>());
                         }
                     }
-
-
                 }
-
-                for (int j = 0; j < unitsLeft.Length; j++)
-                {
-                    var jj = unitsLeft[j];
-                    if (planetOwners[i].owner != unitOwners[j].owner)
-                        enemiesWasInRange = true;
-                }
-                
-
-
             }
         }
     }
@@ -141,7 +124,6 @@ public class EnemyDetectionSystem : ComponentSystem
         enemyDetectionJob.planetEntities = planetEntities;
         enemyDetectionJob.detectionRange = 25f;
         enemyDetectionJob.unitsInRangeType = GetArchetypeChunkComponentType<UnitInRange>(true);
-        enemyDetectionJob.unitOwnersType = GetArchetypeChunkComponentType<UnitOwner>(true);
         enemyDetectionJob.unitsTranslationsType = GetArchetypeChunkComponentType<Translation>(true);
         enemyDetectionJob.unitsTargetsType = GetArchetypeChunkComponentType<TargetSelector>(true);
         enemyDetectionJob.entitiesTypes = GetArchetypeChunkEntityType();
