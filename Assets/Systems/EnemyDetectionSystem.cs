@@ -18,6 +18,8 @@ public class EnemyDetectionSystem : ComponentSystem
 {
     private EntityQuery unitQuery;
     private EntityQuery planetQuery;
+    private EntityQuery arenaQuery;
+    private EntityQueryDesc arenaQueryDesc;
     private EntityQuery unitsInRange;
 
     [BurstCompile]
@@ -64,6 +66,11 @@ public class EnemyDetectionSystem : ComponentSystem
         public EntityCommandBuffer.Concurrent entityCommandBuffer;
         public NativeArray<UnitInRange> unitsInRange;
         public NativeArray<Entity> planetEntities;
+        public NativeArray<Entity> arenaEntities;
+        public NativeArray<Arena> activeArenas;
+        public NativeArray<Translation> activeArenaTranslations;
+        [Unity.Collections.ReadOnly] public BufferFromEntity<UnitsBufferElement> buffers;
+
 
         public void Execute(int index)
         {
@@ -109,6 +116,12 @@ public class EnemyDetectionSystem : ComponentSystem
         {
             All = new[] { ComponentType.ReadOnly<UnitInRange>(),ComponentType.ReadOnly<UnitOwner>(),  },
         });
+
+        arenaQueryDesc = new EntityQueryDesc
+        {
+            All = new[] { ComponentType.ReadOnly<Arena>(), ComponentType.ReadOnly<Translation>(), ComponentType.ReadOnly<UnitsBufferElement>(),  },
+        };
+        arenaQuery = GetEntityQuery(arenaQueryDesc);
     }
 
     private JobHandle dependency;
@@ -136,10 +149,19 @@ public class EnemyDetectionSystem : ComponentSystem
 
 
         var unitsInRangeArray = unitsInRange.ToComponentDataArray<UnitInRange>(Allocator.TempJob);
+        var arenasEntities = arenaQuery.ToEntityArray(Allocator.TempJob);
+        var activeArenas = arenaQuery.ToComponentDataArray<Arena>(Allocator.TempJob);
+        var activeArenasTranslation = arenaQuery.ToComponentDataArray<Translation>(Allocator.TempJob);
+        var activeArenasBuffers = GetBufferFromEntity<UnitsBufferElement>(true);
+
         PlanetInDangerDetectionJob planetInDangerDetectionJob = new PlanetInDangerDetectionJob();
         planetInDangerDetectionJob.entityCommandBuffer = PostUpdateCommands.ToConcurrent();
         planetInDangerDetectionJob.planetEntities = planetEntities;
         planetInDangerDetectionJob.unitsInRange = unitsInRangeArray;
+        planetInDangerDetectionJob.arenaEntities = arenasEntities;
+        planetInDangerDetectionJob.activeArenaTranslations = activeArenasTranslation;
+        planetInDangerDetectionJob.activeArenas = activeArenas;
+        planetInDangerDetectionJob.buffers = activeArenasBuffers;
 
         var planetInDangerJobHandle = planetInDangerDetectionJob.Schedule(planetEntities.Length, 4, dependency);
         planetInDangerJobHandle.Complete();
@@ -148,6 +170,10 @@ public class EnemyDetectionSystem : ComponentSystem
         planetEntities.Dispose();
         planetTranslations.Dispose();
         unitsInRangeArray.Dispose();
+
+        arenasEntities.Dispose();
+        activeArenas.Dispose();
+        activeArenasTranslation.Dispose();
 
     }
 }

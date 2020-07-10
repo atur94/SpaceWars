@@ -17,9 +17,9 @@ public class RotationSystem : JobComponentSystem
             {
                 //                var angle = math.atan2(direction.y, direction.x);
 
-                var angle = math.acos(math.dot(math.normalize(direction), new float2(0, 1f)));
-                if (direction.x < 0) angle *= -1;
-                rotation.Value = quaternion.AxisAngle(new float3(0f, 0, 1), -angle);
+                var newAngle = math.acos(math.dot(math.normalize(direction), new float2(0, 1f)));
+                if (direction.x < 0) newAngle *= -1;
+                rotation.Value = quaternion.AxisAngle(new float3(0f, 0, 1), -newAngle);
 
             }
 

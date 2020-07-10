@@ -140,7 +140,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6a1098a011b8b34cbbaba513b92ef97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actualUnits: []
+  spawnPercentage: 0.5
   canBeStartedPlanet: 0
   isAnyEnemyInRange: 0
   unitSpawn: 1
@@ -305,16 +305,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6235944518366738911, guid: 7519cf5d04a2a7e48baf772187d14242,
-        type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 6235944518366738911, guid: 7519cf5d04a2a7e48baf772187d14242,
-        type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 6235944518366738911, guid: 7519cf5d04a2a7e48baf772187d14242,
         type: 3}

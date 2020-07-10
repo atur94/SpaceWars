@@ -110,7 +110,9 @@ public class MoveSystem : JobComponentSystem
                     velocity.currentAcceleration = (velocity.maxVelocity - velocity.currentVelocity) /
                                                    velocity.maxVelocity * velocity.maxAcceleration;
                 else
+                {
                     velocity.currentAcceleration = velocity.maxAcceleration;
+                }
                 if (velocity.currentVelocity < 1f && distanceBetweenCurrentPosAndTarget < 0.3f)
                 {
                     velocity.currentAcceleration = 0f;
@@ -124,7 +126,7 @@ public class MoveSystem : JobComponentSystem
                 velocity.currentAcceleration = -velocity.currentVelocity * breakDistanceDivider;
             }
             
-            velocity.currentVector = math.lerp(velocity.currentVector, moveDirectionNormalized, 0.04f);
+            velocity.currentVector = math.lerp(velocity.currentVector, moveDirectionNormalized, 0.02f);
 //            Debug.DrawRay(localToWorld.Position, localToWorld.Up);
         }).Schedule(inputDeps);
         }

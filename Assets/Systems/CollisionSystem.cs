@@ -101,8 +101,8 @@ public class UnitSwallowingSystem : ComponentSystem
         Entities.ForEach((Entity entity, ref UnitCanBeSwallowed swallowedProperty) =>
         {
             var planetEntity = swallowedProperty.spawnerEntity;
-            var unitsBuffer = entityManager.GetBuffer<PlanetUnitsBuffer>(planetEntity);
-            unitsBuffer.Add(new PlanetUnitsBuffer
+            var unitsBuffer = entityManager.GetBuffer<UnitsBufferElement>(planetEntity);
+            unitsBuffer.Add(new UnitsBufferElement
             {
                 shipKind = entity
             });

@@ -5,6 +5,7 @@ using Unity.Transforms;
 public struct Velocity : IComponentData
 {
     public float maxVelocity;
+    public float minVelocity;
     public float currentVelocity;
     public float maxAcceleration;
     public float currentAcceleration;

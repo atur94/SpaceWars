@@ -17,7 +17,7 @@ public struct PlanetUnit
 }
 
 [InternalBufferCapacity(100)]
-public struct PlanetUnitsBuffer : IBufferElementData
+public struct UnitsBufferElement : IBufferElementData
 {
     public Entity shipKind;
 }
@@ -44,7 +44,7 @@ public class PlanetAuthoring : MonoBehaviour, IConvertGameObjectToEntity, IDecla
         });
 
         dstManager.AddComponentData(entity, new PlanetOwner());
-        var buffer = dstManager.AddBuffer<PlanetUnitsBuffer>(entity);
+        var buffer = dstManager.AddBuffer<UnitsBufferElement>(entity);
         dstManager.AddSharedComponentData(entity, new UnitDetectionRange
         {
             Value = enemyDetectionRange

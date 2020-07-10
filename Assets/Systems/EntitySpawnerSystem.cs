@@ -25,7 +25,7 @@ public class EntitySpawnerSystem : ComponentSystem
         commandBufferSystem = World.GetExistingSystem<EndSimulationEntityCommandBufferSystem>();
         spawnerQuery = GetEntityQuery(new EntityQueryDesc
         {
-            All = new [] {ComponentType.ReadOnly<Spawner>(), ComponentType.ReadOnly<Translation>(), ComponentType.ReadOnly<PlanetOwner>(), ComponentType.ReadWrite<PlanetUnitsBuffer>(),   }
+            All = new [] {ComponentType.ReadOnly<Spawner>(), ComponentType.ReadOnly<Translation>(), ComponentType.ReadOnly<PlanetOwner>(), ComponentType.ReadWrite<UnitsBufferElement>(),   }
         });
 
         commandsQuery = GetEntityQuery(new EntityQueryDesc
@@ -58,7 +58,7 @@ public class EntitySpawnerSystem : ComponentSystem
 //                }
 //            });
 
-//            var unitBuffer = em.GetBuffer<PlanetUnitsBuffer>(spawnCommand.source);
+//            var unitBuffer = em.GetBuffer<UnitsBufferElement>(spawnCommand.source);
 //            var spawnedEntity = em.Instantiate(unitBuffer[0].shipKind);
 //            em.SetComponentData(spawnedEntity, new TargetSelector
 //            {

@@ -68,7 +68,7 @@ public class SinglePlanetController : MonoBehaviour
         float currentTime = Time.time;
         if (nextSpawn < currentTime && !isAnyEnemyInRange)
         {
-            var unitBuffer = entityManager.GetBuffer<PlanetUnitsBuffer>(spawnerEntity);
+            var unitBuffer = entityManager.GetBuffer<UnitsBufferElement>(spawnerEntity);
 
             nextSpawn = currentTime + 2f;
             if (owner != null && actualUnits.Count < 50)

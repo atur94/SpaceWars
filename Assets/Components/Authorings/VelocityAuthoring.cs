@@ -7,6 +7,7 @@ public class VelocityAuthoring : MonoBehaviour, IConvertGameObjectToEntity
 {
     public float maxVelocity;
     public float maxAcceleration;
+    public float minVelocity;
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
@@ -14,6 +15,7 @@ public class VelocityAuthoring : MonoBehaviour, IConvertGameObjectToEntity
         {
             maxVelocity = maxVelocity,
             maxAcceleration = maxAcceleration,
+            minVelocity = minVelocity
         });
     }
 }
