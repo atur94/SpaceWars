@@ -61,3 +61,4 @@ MonoBehaviour:
     type: 3}
   shipFirst: {fileID: 6558662402512520682, guid: e47123465eae26d40b296a3a9bc22ae7,
     type: 3}
+  arena: {fileID: 7994252447386879541, guid: d42411263b9d2a342b95dc0e560b2391, type: 3}

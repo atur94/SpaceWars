@@ -26,7 +26,7 @@ public class UnitSpawnerSystem : ComponentSystem
 //            secondsUntilGenerate -= deltaTime;
 //            if (secondsUntilGenerate <= 0)
 //            {
-//                commandBuffer.Instantiate(spawner.planetEntity);
+//                commandBuffer.Instantiate(spawner.whatsInRange);
 //                secondsUntilGenerate = spawner.cooldownSeconds;
 //            }
 //

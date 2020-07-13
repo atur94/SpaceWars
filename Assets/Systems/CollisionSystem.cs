@@ -1,14 +1,8 @@
-﻿using System;
-using Unity.Burst;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Physics;
 using Unity.Physics.Systems;
-using Unity.Rendering;
-using Unity.Transforms;
-using UnityEngine;
-using Collider = Unity.Physics.Collider;
 
 [UpdateAfter(typeof(EndFramePhysicsSystem))]
 public class CollisionSystem  : JobComponentSystem
@@ -37,7 +31,7 @@ public class CollisionSystem  : JobComponentSystem
         private void TriggerEvent(Entity spawner, Entity unit)
         {
             UnitInRange range = units[unit];
-            if(range.planetEntity == spawner)
+            if(range.whatsInRange == spawner)
             {
                 commandBuffer.AddComponent(unit, new UnitCanBeSwallowed
                 {

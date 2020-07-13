@@ -9,6 +9,11 @@ public struct Arena : IComponentData
     public Entity arenaParent;
 }
 
+public struct UnitArenaBound : IComponentData
+{
+    public Entity arenaEntity;
+}
+
 
 public class ArenaAuthoring : MonoBehaviour, IConvertGameObjectToEntity
 {

@@ -16,6 +16,7 @@ using RaycastHit = UnityEngine.RaycastHit;
 public class TargetSelectionSystem : ComponentSystem
 {
     BeginInitializationEntityCommandBufferSystem m_EntityCommandBufferSystem;
+    public Player mainPlayer;
     protected override void OnCreate()
     {
         base.OnCreate();
@@ -32,7 +33,7 @@ public class TargetSelectionSystem : ComponentSystem
 //
 //            float rayDistance = 100f;
 //            var entitySelected = Raycast(ray.origin, (ray.direction * rayDistance) + ray.origin);
-//            Entities.ForEach((Entity planetEntity, ref SelectedTag tag) => { EntityManager.RemoveComponent<SelectedTag>(planetEntity); });
+//            Entities.ForEach((Entity whatsInRange, ref SelectedTag tag) => { EntityManager.RemoveComponent<SelectedTag>(whatsInRange); });
 //
 //            if (entitySelected != Entity.Null)
 //            {
@@ -60,10 +61,10 @@ public class TargetSelectionSystem : ComponentSystem
 //
 //            // Sprawdzić czy jest coś zaznaczone. Jezeli tak to wyslac jednostki na ta zaznaczoną jednostkę
 //            Entity parentEntity = Entity.Null;
-//            Entities.WithAll<SelectedTag>().ForEach(planetEntity =>
+//            Entities.WithAll<SelectedTag>().ForEach(whatsInRange =>
 //            {
 //                isAnySelected = true;
-//                parentEntity = planetEntity;
+//                parentEntity = whatsInRange;
 //            });
 //
 //            if (isAnySelected && entitySelected != Entity.Null)
@@ -91,9 +92,12 @@ public class TargetSelectionSystem : ComponentSystem
             RaycastHit2D rayHit = Physics2D.Raycast(ray.origin, ray.direction);
             if (rayHit.collider != null)
             {
-                Entities.ForEach((ref TargetSelector targetSelector) =>
+                Entities.ForEach((ref TargetSelector targetSelector, ref UnitOwner unitOwner) =>
                 {
-                    targetSelector.SecondaryTranslation = new float3(rayHit.point, 0f);
+                    var unitOwnerow = unitOwner.owner;
+                    var ma = mainPlayer;
+                    if(unitOwner.owner == ma.id)
+                        targetSelector.SecondaryTranslation = new float3(rayHit.point, 0f);
                 }); 
             }
         }

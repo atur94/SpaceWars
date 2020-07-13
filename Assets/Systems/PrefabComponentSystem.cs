@@ -17,7 +17,6 @@ public class PrefabComponentSystem : MonoBehaviour, IConvertGameObjectToEntity
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
         defaultPrefabStatic = defaultPrefab;
-        defaultPrefabStatic = defaultPrefab;
         using (blobAssetStore = new BlobAssetStore())
         {
             Entity convertedEntity = GameObjectConversionUtility.ConvertGameObjectHierarchy(defaultPrefab,

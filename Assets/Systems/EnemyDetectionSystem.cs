@@ -1,16 +1,14 @@
-﻿using System.ComponentModel;
-using System.Numerics;
+﻿using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine.Jobs;
 
 public struct UnitInRange : IComponentData
 {
-    public Entity planetEntity;
+    public Entity whatsInRange;
 }
 
 [UpdateBefore(typeof(CollisionSystem))]
@@ -28,17 +26,22 @@ public class EnemyDetectionSystem : ComponentSystem
         public NativeArray<Translation> planetsTranslations;
         public NativeArray<Entity> planetEntities;
         public NativeArray<PlanetOwner> planetOwners;
+        public NativeArray<Translation> unitTranslationsNativeArray;
+        public NativeArray<Entity> unitEntitiesNativeArray;
+        [Unity.Collections.ReadOnly] public ComponentDataFromEntity<UnitOwner> unitOwners;
+        [Unity.Collections.ReadOnly] public ComponentDataFromEntity<UnitArenaBound> unitAreBound;
         [Unity.Collections.ReadOnly] public float detectionRange;
         [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<Translation> unitsTranslationsType;
         [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<TargetSelector> unitsTargetsType;
         [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<UnitInRange> unitsInRangeType;
-        [Unity.Collections.ReadOnly] public ArchetypeChunkEntityType entitiesTypes;
+        [Unity.Collections.ReadOnly] public ArchetypeChunkEntityType unitEntitiesTypes;
+
         public EntityCommandBuffer.Concurrent entityCommandBuffer;
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
         {
             var unitTranslations = chunk.GetNativeArray(unitsTranslationsType);
             var unitTargets = chunk.GetNativeArray(unitsTargetsType); 
-            var entitiesChunk = chunk.GetNativeArray(entitiesTypes);
+            var unitEntities = chunk.GetNativeArray(unitEntitiesTypes);
 
             for (int i = 0; i < planetsTranslations.Length; i++)
             {
@@ -49,11 +52,40 @@ public class EnemyDetectionSystem : ComponentSystem
                         var distance = math.distance(planetsTranslations[i].Value, unitTranslations[j].Value);
                         if (distance < detectionRange)
                         {
-                            entityCommandBuffer.AddComponent(chunkIndex, entitiesChunk[j], new UnitInRange { planetEntity = planetEntities[i] });
+                            entityCommandBuffer.AddComponent(chunkIndex, unitEntities[j], new UnitInRange { whatsInRange = planetEntities[i] });
+                            if (!unitAreBound.Exists(unitEntities[j]))
+                            {
+                                entityCommandBuffer.AddComponent(chunkIndex, unitEntities[j], new UnitArenaBound
+                                {
+                                    arenaEntity = planetEntities[i]
+                                });
+                            }
                         }
                         else
                         {
-                            entityCommandBuffer.RemoveComponent(chunkIndex, entitiesChunk[j], ComponentType.ReadOnly<UnitInRange>());
+                            entityCommandBuffer.RemoveComponent(chunkIndex, unitEntities[j], ComponentType.ReadOnly<UnitInRange>());
+                        }
+                    }
+                }
+
+            }
+
+            for (int i = 0; i < unitTranslationsNativeArray.Length; i++)
+            {
+                for (int j = 0; j < unitTranslations.Length; j++)
+                {
+                    var distance = math.distance(unitTranslations[j].Value, unitTranslationsNativeArray[i].Value);
+                    var ownerA = unitOwners[unitEntitiesNativeArray[i]].owner;
+                    var ownerB = unitOwners[unitEntities[j]].owner;
+
+                    if (distance < detectionRange && ownerB != ownerA)
+                    {
+                        if(!unitAreBound.Exists(unitEntities[j]))
+                        {
+                            entityCommandBuffer.AddComponent(chunkIndex, unitEntities[j], new UnitArenaBound
+                            {
+                                arenaEntity = unitEntitiesNativeArray[i],
+                            });
                         }
                     }
                 }
@@ -64,22 +96,22 @@ public class EnemyDetectionSystem : ComponentSystem
     public struct PlanetInDangerDetectionJob : IJobParallelFor
     {
         public EntityCommandBuffer.Concurrent entityCommandBuffer;
-        public NativeArray<UnitInRange> unitsInRange;
+        [ReadOnly] public NativeArray<UnitInRange> unitsInRange;
         public NativeArray<Entity> planetEntities;
         public NativeArray<Entity> arenaEntities;
         public NativeArray<Arena> activeArenas;
         public NativeArray<Translation> activeArenaTranslations;
-        [Unity.Collections.ReadOnly] public BufferFromEntity<UnitsBufferElement> buffers;
-
 
         public void Execute(int index)
         {
+
             var currentPlanet = planetEntities[index];
             bool isInDanger = false;
 
-            for (int i = 0; i < unitsInRange.Length; i++)
+            if (unitsInRange.Length <= 0) return;
+            for (int i = 0; i < unitsInRange.Length - 1; i++)
             {
-                if (unitsInRange[i].planetEntity == currentPlanet && unitsInRange[i].planetEntity == currentPlanet)
+                if (unitsInRange[i].whatsInRange == currentPlanet)
                 {
                     isInDanger = true;
                 }
@@ -88,7 +120,6 @@ public class EnemyDetectionSystem : ComponentSystem
             if (isInDanger)
             {
                 entityCommandBuffer.AddComponent<PlanetInDanger>(index, planetEntities[index]);
-
             }
             else
             {
@@ -131,7 +162,8 @@ public class EnemyDetectionSystem : ComponentSystem
         var planetTranslations = planetQuery.ToComponentDataArray<Translation>(Allocator.TempJob);
         var planetEntities = planetQuery.ToEntityArray(Allocator.TempJob);
         var planetOwners = planetQuery.ToComponentDataArray<PlanetOwner>(Allocator.TempJob);
-
+        var unitsTranslationsNativeArray = unitQuery.ToComponentDataArray<Translation>(Allocator.TempJob);
+        var unitEntitiesNativeArray = unitQuery.ToEntityArray(Allocator.TempJob);
         enemyDetectionJob.planetOwners = planetOwners;
         enemyDetectionJob.planetsTranslations = planetTranslations;
         enemyDetectionJob.planetEntities = planetEntities;
@@ -139,9 +171,12 @@ public class EnemyDetectionSystem : ComponentSystem
         enemyDetectionJob.unitsInRangeType = GetArchetypeChunkComponentType<UnitInRange>(true);
         enemyDetectionJob.unitsTranslationsType = GetArchetypeChunkComponentType<Translation>(true);
         enemyDetectionJob.unitsTargetsType = GetArchetypeChunkComponentType<TargetSelector>(true);
-        enemyDetectionJob.entitiesTypes = GetArchetypeChunkEntityType();
+        enemyDetectionJob.unitEntitiesTypes = GetArchetypeChunkEntityType();
         enemyDetectionJob.entityCommandBuffer = PostUpdateCommands.ToConcurrent();
-
+        enemyDetectionJob.unitTranslationsNativeArray = unitsTranslationsNativeArray;
+        enemyDetectionJob.unitEntitiesNativeArray = unitEntitiesNativeArray;
+        enemyDetectionJob.unitOwners = GetComponentDataFromEntity<UnitOwner>();
+        enemyDetectionJob.unitAreBound = GetComponentDataFromEntity<UnitArenaBound>();
         var scheduledJobHandle = enemyDetectionJob.ScheduleParallel(unitQuery, dependency);
 
         dependency = JobHandle.CombineDependencies(scheduledJobHandle, dependency);
@@ -152,7 +187,6 @@ public class EnemyDetectionSystem : ComponentSystem
         var arenasEntities = arenaQuery.ToEntityArray(Allocator.TempJob);
         var activeArenas = arenaQuery.ToComponentDataArray<Arena>(Allocator.TempJob);
         var activeArenasTranslation = arenaQuery.ToComponentDataArray<Translation>(Allocator.TempJob);
-        var activeArenasBuffers = GetBufferFromEntity<UnitsBufferElement>(true);
 
         PlanetInDangerDetectionJob planetInDangerDetectionJob = new PlanetInDangerDetectionJob();
         planetInDangerDetectionJob.entityCommandBuffer = PostUpdateCommands.ToConcurrent();
@@ -161,9 +195,7 @@ public class EnemyDetectionSystem : ComponentSystem
         planetInDangerDetectionJob.arenaEntities = arenasEntities;
         planetInDangerDetectionJob.activeArenaTranslations = activeArenasTranslation;
         planetInDangerDetectionJob.activeArenas = activeArenas;
-        planetInDangerDetectionJob.buffers = activeArenasBuffers;
-
-        var planetInDangerJobHandle = planetInDangerDetectionJob.Schedule(planetEntities.Length, 4, dependency);
+        var planetInDangerJobHandle = planetInDangerDetectionJob.Schedule(planetEntities.Length, 1, dependency);
         planetInDangerJobHandle.Complete();
 
         planetOwners.Dispose();
@@ -174,6 +206,9 @@ public class EnemyDetectionSystem : ComponentSystem
         arenasEntities.Dispose();
         activeArenas.Dispose();
         activeArenasTranslation.Dispose();
+        unitsTranslationsNativeArray.Dispose();
+        unitEntitiesNativeArray.Dispose();
 
     }
+
 }

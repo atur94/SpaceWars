@@ -129,7 +129,7 @@ public class PlanetManager : MonoBehaviour, INotifyPropertyChanged
                     Debug.Log("Zaaakuj en spawner");
 
                     CurrentlySelectedPlanet.SpawnUnits(attackedSpawner);
-
+                    attackedSpawner.SpawnUnits(CurrentlySelectedPlanet);
                 }
             }
         }

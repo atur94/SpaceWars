@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour
             startingPlanets[i].owner = players[i];
         }
 
+        World.DefaultGameObjectInjectionWorld.GetExistingSystem<TargetSelectionSystem>().mainPlayer = players[0];
 //        World.DefaultGameObjectInjectionWorld.GetExistingSystem<BuildPhysicsWorld>().Enabled = false;
     }
 }
