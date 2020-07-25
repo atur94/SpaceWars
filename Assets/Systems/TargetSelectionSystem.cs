@@ -33,7 +33,8 @@ public class TargetSelectionSystem : ComponentSystem
 //
 //            float rayDistance = 100f;
 //            var entitySelected = Raycast(ray.origin, (ray.direction * rayDistance) + ray.origin);
-//            Entities.ForEach((Entity whatsInRange, ref SelectedTag tag) => { EntityManager.RemoveComponent<SelectedTag>(whatsInRange); });
+//            Entities.ForEach((Entity whatsInRange, ref SelectedTag tag) => { EntityManager.
+// ponent<SelectedTag>(whatsInRange); });
 //
 //            if (entitySelected != Entity.Null)
 //            {

@@ -30,6 +30,7 @@ public class EnemyDetectionSystem : ComponentSystem
         public NativeArray<Entity> unitEntitiesNativeArray;
         [Unity.Collections.ReadOnly] public ComponentDataFromEntity<UnitOwner> unitOwners;
         [Unity.Collections.ReadOnly] public ComponentDataFromEntity<UnitArenaBound> unitAreBound;
+        [Unity.Collections.ReadOnly] public ComponentDataFromEntity<UnitInRange> unitIsInRange;
         [Unity.Collections.ReadOnly] public float detectionRange;
         [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<Translation> unitsTranslationsType;
         [Unity.Collections.ReadOnly] public ArchetypeChunkComponentType<TargetSelector> unitsTargetsType;
@@ -52,7 +53,8 @@ public class EnemyDetectionSystem : ComponentSystem
                         var distance = math.distance(planetsTranslations[i].Value, unitTranslations[j].Value);
                         if (distance < detectionRange)
                         {
-                            entityCommandBuffer.AddComponent(chunkIndex, unitEntities[j], new UnitInRange { whatsInRange = planetEntities[i] });
+                            if(!unitIsInRange.Exists(unitEntities[j]))
+                                entityCommandBuffer.AddComponent(chunkIndex, unitEntities[j], new UnitInRange { whatsInRange = planetEntities[i] });
                             if (!unitAreBound.Exists(unitEntities[j]))
                             {
                                 entityCommandBuffer.AddComponent(chunkIndex, unitEntities[j], new UnitArenaBound
@@ -80,7 +82,10 @@ public class EnemyDetectionSystem : ComponentSystem
 
                     if (distance < detectionRange && ownerB != ownerA)
                     {
-                        if(!unitAreBound.Exists(unitEntities[j]))
+                        if(!unitIsInRange.Exists(unitEntities[j]))
+                            entityCommandBuffer.AddComponent(chunkIndex, unitEntities[j], new UnitInRange { whatsInRange = unitEntitiesNativeArray[i] });
+
+                        if (!unitAreBound.Exists(unitEntities[j]))
                         {
                             entityCommandBuffer.AddComponent(chunkIndex, unitEntities[j], new UnitArenaBound
                             {
@@ -176,6 +181,7 @@ public class EnemyDetectionSystem : ComponentSystem
         enemyDetectionJob.unitTranslationsNativeArray = unitsTranslationsNativeArray;
         enemyDetectionJob.unitEntitiesNativeArray = unitEntitiesNativeArray;
         enemyDetectionJob.unitOwners = GetComponentDataFromEntity<UnitOwner>();
+        enemyDetectionJob.unitIsInRange = GetComponentDataFromEntity<UnitInRange>();
         enemyDetectionJob.unitAreBound = GetComponentDataFromEntity<UnitArenaBound>();
         var scheduledJobHandle = enemyDetectionJob.ScheduleParallel(unitQuery, dependency);
 
